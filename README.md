@@ -1,0 +1,2 @@
+# LocaleTestPlugin
+Test LocaleAPI.

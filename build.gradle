@@ -28,14 +28,14 @@ repositories {
     maven {
         name = "Sponge"
         url = "http://repo.spongepowered.org/maven"
-    }
+	}
     maven {
         name = "Forge"
         url = "http://files.minecraftforge.net/maven"
-    }
-	maven { 
-		name = "LocaleAPI"
-		url = 'https://jitpack.io' 
+	}
+    maven { 
+	name = "LocaleAPI"
+	url = 'https://jitpack.io' 
 	}
 }
 

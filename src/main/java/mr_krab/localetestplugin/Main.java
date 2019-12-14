@@ -96,6 +96,9 @@ public class Main {
 	public void onPostInitialization(GamePostInitializationEvent event) {
 		localeAPI = LocaleAPIMain.getInstance().getAPI();
 		localeAPI.saveLocales(instance);
+		localeAPI.saveHoconLocales(instance);
+		localeAPI.saveJsonLocales(instance);
+		localeAPI.saveYamlLocales(instance);
 		commandRegister();
 	}
 	
@@ -121,6 +124,7 @@ public class Main {
 		Sponge.getCommandManager().register(this, commandTest, "test");
 	}
 
+	//**** An example to simplify use. || Пример для упрощения использования. ****\\
 	public Map<Locale, LocaleUtil> getLocales() {
 		return localeAPI.getLocalesMap("localetestplugin");
 	}

@@ -41,7 +41,7 @@ repositories {
 
 dependencies {
     compile("org.spongepowered:spongeapi:${spongeapi}")
-    implementation 'com.github.Mr-Krab:LocaleAPI:API7'
+    implementation 'com.github.Mr-Krab:LocaleAPI:1.0'
 }
 
 spongestart {

@@ -1,2 +1,2 @@
 # LocaleTestPlugin
-Test LocaleAPI. Used by SpongeAPI8.
+Test [LocaleAPI](https://github.com/SawFowl/LocaleAPI). Used by SpongeAPI8.

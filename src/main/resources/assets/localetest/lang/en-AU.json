@@ -1,0 +1,10 @@
+{
+  "TestPath": "&a&len-AU locale. &4&lTest String JSON config",
+  "TestComponentPath": "{\"extra\":[{\"bold\":true,\"color\":\"green\",\"text\":\"en-AU locale. \"},{\"bold\":true,\"color\":\"dark_red\",\"text\":\"Test JSON string JSON\"}],\"text\":\"\"}",
+  "TestListPath": [
+    "&a&len-AU locale. &4&lTest Strings JSON config"
+  ],
+  "TestListComponentsPath": [
+    "{\"extra\":[{\"bold\":true,\"color\":\"green\",\"text\":\"en-AU locale. \"},{\"bold\":true,\"color\":\"dark_red\",\"text\":\"Test JSON strings JSON config\"}],\"text\":\"\"}"
+  ]
+}

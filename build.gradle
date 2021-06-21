@@ -1,22 +1,36 @@
-plugins {
-    id "java"
-    id "signing"
-    id "ninja.miserable.blossom" version "1.0.1"
-    id "com.github.johnrengelman.shadow" version "2.0.1"
-    id "org.spongepowered.plugin" version "0.8.1"
-    id 'com.qixalite.spongestart2' version '3.0.1'
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { 
+            name = "Forge"
+            url = "https://files.minecraftforge.net/maven" 
+        }
+        maven {
+            name = "Sponge"
+            url = "https://repo.spongepowered.org/maven"
+        }
+        maven { 
+            name = "JitPack"
+            url 'https://jitpack.io' 
+        }
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.+', changing: true
+    }
 }
 
-group = "mr_krab.localetestplugin"
+apply plugin: 'net.minecraftforge.gradle'
+
+group = "sawfowl.localetest"
 version = "${major}.${minor}.${patch}-${api}-${suffix}"
-description = "Plugin for test LocaleAPI."
+description = "Test Locale API plugin."
 
 if (System.getenv().BUILD_NUMBER != null) {
     version += "-${System.getenv().BUILD_NUMBER}"
 }
 
 compileJava {
-    sourceCompatibility = targetCompatibility = "1.8"
+    sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 }
 
 tasks.withType(JavaCompile) {
@@ -24,37 +38,42 @@ tasks.withType(JavaCompile) {
 }
 
 repositories {
-    jcenter()
-    maven {
-        name = "Sponge"
-        url = "http://repo.spongepowered.org/maven"
-	}
+    mavenCentral()
     maven {
         name = "Forge"
-        url = "http://files.minecraftforge.net/maven"
-	}
-    maven { 
-	name = "LocaleAPI"
-	url = 'https://jitpack.io' 
-	}
+        url = "https://files.minecraftforge.net/maven"
+    }
+    maven {
+        name = "Sponge"
+        url = "https://repo.spongepowered.org/maven"
+    }
+        maven { 
+            name = "JitPack"
+            url 'https://jitpack.io' 
+        }
+}
+
+minecraft {
+    mappings channel: 'official', version: '1.16.5'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                mousetweaks {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
 }
 
 dependencies {
-    compile("org.spongepowered:spongeapi:${spongeapi}")
-    implementation 'com.github.Mr-Krab:LocaleAPI:1.0'
+	minecraft 'net.minecraftforge:forge:1.16.5-36.1.0'
+    implementation "org.spongepowered:spongeapi:8.0.0-SNAPSHOT"
+	implementation 'com.github.SawFowl:LocaleAPI:2.0'
 }
-
-spongestart {
-    online 'false'
-    minecraft '1.12.2'
-    type 'bleeding'
-    spongeForge properties.spongeforge
-    forgeServerFolder 'run/API7/'
-}
-
-signing {
-    required {Project.hasProperty("signing.keyId")}
-    sign configurations.archives, configurations.shadow
-}
-
-build.dependsOn(shadowJar)

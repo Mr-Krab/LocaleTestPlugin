@@ -9,16 +9,21 @@ import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.StartedEngineEvent;
+import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.configurate.ConfigurateException;
+import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.plugin.jvm.Plugin;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import sawfowl.localeapi.LocaleAPIMain;
-import sawfowl.localeapi.utils.ConfigTypes;
-import sawfowl.localeapi.utils.LocaleUtil;
+import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocaleService;
+import sawfowl.localeapi.serializetools.SerializedItemStack;
+import sawfowl.localeapi.serializetools.TypeTokens;
+import sawfowl.localeapi.utils.AbstractLocaleUtil;
 
 @Plugin("localetest")
 public class LocaleTest {
@@ -42,28 +47,29 @@ public class LocaleTest {
 		if(Sponge.pluginManager().plugin("localeapi").isPresent() && Sponge.pluginManager().isLoaded("localeapi")) {
 			api = ((LocaleAPIMain) Sponge.pluginManager().plugin("localeapi").get().instance()).getAPI();
 		}
-		api.checkLocalesExist(instance, ConfigTypes.HOCON);
-		api.checkLocalesExist(instance, ConfigTypes.YAML);
-		api.checkLocalesExist(instance, ConfigTypes.JSON);
-		api.checkLocalesExist(instance, ConfigTypes.PROPERTIES);
-		if(!api.getPluginLocales(instance).isEmpty()) {
-			logger.info("Localizations already exist. Creation is not required.");
+		if(!api.localesExist(instance)) {
+			api.saveAssetLocales(instance, ConfigTypes.JSON);
+			// When creating localizations, be sure to create a default localization - Locales.DEFAULT.
+			// If the above check is performed, the localization creation will not be performed because it is unnecessary.
+			api.createPluginLocale(instance, ConfigTypes.HOCON, Locales.DEFAULT);
+			api.createPluginLocale(instance, ConfigTypes.YAML, Locales.EN_CA);
+			api.createPluginLocale("localetest", ConfigTypes.JSON, Locales.EN_GB);
+			api.createPluginLocale("localetest", ConfigTypes.PROPERTIES, Locales.RU_RU);
 		}
-		api.saveAssetLocales(instance, ConfigTypes.JSON);
-		// When creating localizations, be sure to create a default localization - Locales.DEFAULT.
-		// If the above check is performed, the localization creation will not be performed because it is unnecessary.
-		api.createPluginLocale(instance, ConfigTypes.HOCON, Locales.DEFAULT);
-		api.createPluginLocale(instance, ConfigTypes.YAML, Locales.EN_CA);
-		api.createPluginLocale("localetest", ConfigTypes.JSON, Locales.EN_GB);
-		api.createPluginLocale("localetest", ConfigTypes.PROPERTIES, Locales.RU_RU); // <--- this return null
 		testWrite();
 		testRead();
 	}
 
 	private void testWrite() {
+		try {
+			getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").set(TypeTokens.SERIALIZED_STACK_TOKEN, new SerializedItemStack(ItemStack.of(ItemTypes.STONE)));
+		} catch (SerializationException e) {
+			e.printStackTrace();
+		}
 		
 		// Test write and save default locale - en-US. I deliberately indicated the wrong localization in the code.
 		boolean checkHocon = updateIsSave(this.saveHocon, getLocaleUtil(Locales.CA_ES).checkString("&a&lDefault locale. &4&lTest String HOCON config", "Test comment", "TestPath"));
+		checkHocon = updateIsSave(this.saveHocon, getLocaleUtil(Locales.CA_ES).checkString("&a&lDefault locale. Checking the string existing only in it.", "Test comment", "TestPath1"));
 		checkHocon = updateIsSave(this.saveHocon,  getLocaleUtil(Locales.CA_ES).checkComponent(true, serialize("&a&lDefault locale. &4&lTest JSON string HOCON config"), "Test comment", "TestComponentPath"));
 		checkHocon = updateIsSave(this.saveHocon, getLocaleUtil(Locales.CA_ES).checkListStrings(Arrays.asList("&a&lDefault locale. &4&lTest Strings HOCON config"), "Test comment", "TestListPath"));
 		checkHocon = updateIsSave(this.saveHocon,  getLocaleUtil(Locales.CA_ES).checkListComponents(true, Arrays.asList(serialize("&a&lDefault locale. &4&lTest JSON strings HOCON config")), "Test comment", "TestListComponentsPath"));
@@ -96,12 +102,21 @@ public class LocaleTest {
 		
 		logger.info("Total locales created/saved -> " + api.getPluginLocales(instance).size());
 		
+		try {
+			logger.warn("Start test getting ItemStack from config!");
+			logger.info(getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").get(TypeTokens.SERIALIZED_STACK_TOKEN).getItemStack().type().asComponent());
+		} catch (SerializationException e) {
+			// TODO Автоматически созданный блок catch
+			e.printStackTrace();
+		}
 		//Test writed strings
 		logger.warn("Start test strings! TestPath");
 		logger.info(getLocaleUtil(Locales.CA_ES).getComponent(false, "TestPath"));
 		logger.info(getLocaleUtil(Locales.EN_CA).getComponent(false, "TestPath"));
 		logger.info(getLocaleUtil(Locales.EN_GB).getComponent(false, "TestPath"));
 		logger.info(getLocaleUtil(Locales.RU_RU).getComponent(false, "TestPath", "TestPath2"));
+		logger.info(getLocaleUtil(Locales.RU_RU).getComponent(false, "TestPath1"));
+		logger.info(getLocaleUtil(Locales.RU_RU).getComponent(false, "TestNulledPath"));
 		
 		//test writed components
 		logger.warn("Start test components! TestComponentPath");
@@ -132,7 +147,7 @@ public class LocaleTest {
 		return LegacyComponentSerializer.legacyAmpersand().deserialize(string);
 	}
 
-	private LocaleUtil getLocaleUtil(Locale locale) {
+	private AbstractLocaleUtil getLocaleUtil(Locale locale) {
 		return api.getOrDefaultLocale(instance, locale);
 	}
 

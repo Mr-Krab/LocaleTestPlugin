@@ -1,79 +1,45 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven { 
-            name = "Forge"
-            url = "https://files.minecraftforge.net/maven" 
-        }
-        maven {
-            name = "Sponge"
-            url = "https://repo.spongepowered.org/maven"
-        }
-        maven { 
-            name = "JitPack"
-            url 'https://jitpack.io' 
-        }
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.+', changing: true
-    }
+plugins {
+    id("java")
+    id("java-library")
+    id("org.spongepowered.gradle.vanilla") version "0.2"
 }
-
-apply plugin: 'net.minecraftforge.gradle'
 
 group = "sawfowl.localetest"
 version = "${major}.${minor}.${patch}-${api}-${suffix}"
-description = "Test Locale API plugin."
 
-if (System.getenv().BUILD_NUMBER != null) {
-    version += "-${System.getenv().BUILD_NUMBER}"
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
-compileJava {
-    sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+repositories {
+    mavenCentral()
+    maven {
+        name = "Sponge"
+        url = "https://repo.spongepowered.org/maven"
+    }
+    maven { 
+        name = "JitPack"
+        url 'https://jitpack.io' 
+    }
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        name = "Forge"
-        url = "https://files.minecraftforge.net/maven"
-    }
-    maven {
-        name = "Sponge"
-        url = "https://repo.spongepowered.org/maven"
-    }
-        maven { 
-            name = "JitPack"
-            url 'https://jitpack.io' 
-        }
-}
-
 minecraft {
-    mappings channel: 'official', version: '1.16.5'
+    version("1.16.5")
 
     runs {
-        client {
-            workingDirectory project.file('run')
-
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                mousetweaks {
-                    source sourceSets.main
-                }
-            }
-        }
+        server()
+        client()
     }
 }
 
 dependencies {
-	minecraft 'net.minecraftforge:forge:1.16.5-36.1.0'
     implementation "org.spongepowered:spongeapi:8.0.0-SNAPSHOT"
-	implementation 'com.github.SawFowl:LocaleAPI:2.0'
+    implementation 'org.spongepowered:spongevanilla:1.16.5-8.0.0-RC705:universal@jar'
+	implementation 'com.github.SawFowl:LocaleAPI:API8-SNAPSHOT'
+	//implementation fileTree(dir: 'libs', include: '*.jar')
 }

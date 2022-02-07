@@ -7,20 +7,25 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.event.Cause;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.impl.AbstractEvent;
 import org.spongepowered.api.event.lifecycle.StartedEngineEvent;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.serialize.SerializationException;
-import org.spongepowered.plugin.jvm.Plugin;
+import org.spongepowered.plugin.PluginContainer;
+import org.spongepowered.plugin.builtin.jvm.Plugin;
+
+import com.google.inject.Inject;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import sawfowl.localeapi.LocaleAPIMain;
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocaleService;
+import sawfowl.localeapi.event.EventForGetLocaleServise;
 import sawfowl.localeapi.serializetools.SerializedItemStack;
 import sawfowl.localeapi.serializetools.TypeTokens;
 import sawfowl.localeapi.utils.AbstractLocaleUtil;
@@ -34,18 +39,24 @@ public class LocaleTest {
 	private boolean saveProperties = false;
 
 	private LocaleTest instance;
+	private PluginContainer pluginContainer;
 	private LocaleService api;
 
 	public LocaleService getAPI() {
 		return api;
 	}
 
+	@Inject
+	public LocaleTest(PluginContainer pluginContainer) {
+		instance = this;
+		this.pluginContainer = pluginContainer;
+		logger = LogManager.getLogger("PluginForTestLocales");
+	}
+
 	@Listener
 	public void onEnable(StartedEngineEvent<Server> event) throws ConfigurateException {
-		instance = this;
-		logger = LogManager.getLogger("PluginForTestLocales");
-		if(Sponge.pluginManager().plugin("localeapi").isPresent() && Sponge.pluginManager().isLoaded("localeapi")) {
-			api = ((LocaleAPIMain) Sponge.pluginManager().plugin("localeapi").get().instance()).getAPI();
+		if(Sponge.pluginManager().plugin("localeapi").isPresent()) {
+			getLocaleService();
 		}
 		if(!api.localesExist(instance)) {
 			api.saveAssetLocales(instance, ConfigTypes.JSON);
@@ -154,6 +165,26 @@ public class LocaleTest {
 	private boolean updateIsSave(boolean currentResult, boolean check) {
 		if(check) currentResult = check;
 		return currentResult;
+	}
+
+	private void getLocaleService() {
+		class GetLocaleServiseEvent extends AbstractEvent implements EventForGetLocaleServise {
+			LocaleService localeService;
+			@Override
+			public Cause cause() {
+				return Cause.builder().append(pluginContainer).build();
+			}
+			@Override
+			public LocaleService getLocaleService() {
+				return localeService;
+			}
+			@Override
+			public void provideLocaleService(LocaleService arg0) {
+				localeService = arg0;
+			}
+		}
+		EventForGetLocaleServise event = new GetLocaleServiseEvent();
+		if(Sponge.eventManager().post(event)) api = event.getLocaleService();
 	}
 
 }

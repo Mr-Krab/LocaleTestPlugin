@@ -13,6 +13,7 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import com.google.inject.Inject;
@@ -20,6 +21,7 @@ import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import sawfowl.localeapi.api.ConfigTypes;
+import sawfowl.localeapi.api.LocaleAPI;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.event.LocaleServiseEvent;
 import sawfowl.localeapi.serializetools.SerializedItemStack;
@@ -36,22 +38,24 @@ public class LocaleTest {
 
 	private LocaleTest instance;
 	private LocaleService api;
+	PluginContainer pluginContainer;
 
 	public LocaleService getAPI() {
 		return api;
 	}
 
 	@Inject
-	public LocaleTest() {
+	public LocaleTest(PluginContainer pluginContainer) {
+		this.pluginContainer = pluginContainer;
 		instance = this;
 		logger = LogManager.getLogger("PluginForTestLocales");
 	}
 
 	@Listener
-	public void onLocaleServisePostEvent(LocaleServiseEvent event) {
+	public void onLocaleServisePostEvent(LocaleServiseEvent.Construct event) {
 		api = event.getLocaleService();
 		if(!api.localesExist(instance)) {
-			api.saveAssetLocales(instance, ConfigTypes.JSON);
+			api.saveAssetLocales(instance);
 			// When creating localizations, be sure to create a default localization - Locales.DEFAULT.
 			// If the above check is performed, the localization creation will not be performed because it is unnecessary.
 			api.createPluginLocale(instance, ConfigTypes.HOCON, Locales.DEFAULT);
@@ -71,7 +75,7 @@ public class LocaleTest {
 		try {
 			getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").set(TypeTokens.SERIALIZED_STACK_TOKEN, new SerializedItemStack(ItemStack.of(ItemTypes.STONE)));
 		} catch (SerializationException e) {
-			e.printStackTrace();
+			logger.error(e.getLocalizedMessage());
 		}
 		
 		// Test write and save default locale - en-US. I deliberately indicated the wrong localization in the code.
@@ -113,8 +117,7 @@ public class LocaleTest {
 			logger.warn("Start test getting ItemStack from config!");
 			logger.info(getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").get(TypeTokens.SERIALIZED_STACK_TOKEN).getItemStack().type().asComponent());
 		} catch (SerializationException e) {
-			// TODO Автоматически созданный блок catch
-			e.printStackTrace();
+			logger.error(e.getLocalizedMessage());
 		}
 		//Test writed strings
 		logger.warn("Start test strings! TestPath");
@@ -153,7 +156,6 @@ public class LocaleTest {
 		logger.info(getLocaleUtil(Locales.EN_GB).getListComponents(true, "TestListComponentsPath").get(1));
 		logger.info(getLocaleUtil(Locales.RU_RU).getListComponents(true, "TestListComponentsPath").get(0));
 		logger.info(getLocaleUtil(Locales.RU_RU).getListComponents(true, "TestListComponentsPath").get(1));
-		
 	}
 
 	private Component serialize(String string) {

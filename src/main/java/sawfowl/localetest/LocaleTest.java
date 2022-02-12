@@ -6,10 +6,13 @@ import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.StartedEngineEvent;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.util.Ticks;
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.serialize.SerializationException;
@@ -21,7 +24,6 @@ import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.LocaleAPI;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.event.LocaleServiseEvent;
 import sawfowl.localeapi.serializetools.SerializedItemStack;
@@ -38,7 +40,7 @@ public class LocaleTest {
 
 	private LocaleTest instance;
 	private LocaleService api;
-	PluginContainer pluginContainer;
+	private PluginContainer pluginContainer;
 
 	public LocaleService getAPI() {
 		return api;
@@ -56,6 +58,7 @@ public class LocaleTest {
 		api = event.getLocaleService();
 		if(!api.localesExist(instance)) {
 			api.saveAssetLocales(instance);
+			logger.info("Total asset locales created/saved -> " + api.getPluginLocales(instance).size());
 			// When creating localizations, be sure to create a default localization - Locales.DEFAULT.
 			// If the above check is performed, the localization creation will not be performed because it is unnecessary.
 			api.createPluginLocale(instance, ConfigTypes.HOCON, Locales.DEFAULT);
@@ -68,7 +71,10 @@ public class LocaleTest {
 	@Listener
 	public void onEnable(StartedEngineEvent<Server> event) throws ConfigurateException {
 		testWrite();
-		testRead();
+		// The Sponge configuration works in asynchronous mode. If reading is performed immediately after writing, a delay must be made.
+		Sponge.asyncScheduler().submit(Task.builder().delay(Ticks.of(5)).plugin(pluginContainer).execute(() -> {
+			testRead();
+		}).build());
 	}
 
 	private void testWrite() {

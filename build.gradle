@@ -25,7 +25,7 @@ repositories {
 }
 
 minecraft {
-	version("1.19.5")
+	version("1.16.5")
 }
 
 tasks.withType(JavaCompile) {

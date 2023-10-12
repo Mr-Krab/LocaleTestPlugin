@@ -2,6 +2,7 @@ plugins {
 	id("java")
 	id("org.spongepowered.gradle.plugin") version "2.0.2"
 	id("eclipse")
+    id("org.spongepowered.gradle.vanilla") version "0.2"
 }
 
 group = "sawfowl.localetest"
@@ -23,13 +24,17 @@ repositories {
 	}
 }
 
+minecraft {
+    version("1.16.5")
+}
+
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
 
 dependencies {
 	implementation "org.spongepowered:spongeapi:8.0.0"
-	implementation "com.github.SawFowl:LocaleAPI:2.2.0"
+	implementation "com.github.SawFowl:LocaleAPI:2.6.0"
 	//implementation fileTree(dir: 'libs', include: '*.jar')
 }
 

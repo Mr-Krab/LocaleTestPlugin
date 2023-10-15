@@ -27,11 +27,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocaleService;
+import sawfowl.localeapi.api.PluginLocale;
 import sawfowl.localeapi.event.LocaleServiseEvent;
 import sawfowl.localeapi.serializetools.CompoundTag;
 import sawfowl.localeapi.serializetools.SerializedItemStack;
-import sawfowl.localeapi.serializetools.TypeTokens;
-import sawfowl.localeapi.utils.AbstractLocaleUtil;
 
 @Plugin("localetest")
 public class LocaleTest {
@@ -40,8 +39,6 @@ public class LocaleTest {
 	private boolean saveYaml = false;
 	private boolean saveJson = false;
 	private boolean saveProperties = false;
-
-	private LocaleTest instance;
 	private LocaleService api;
 	private PluginContainer pluginContainer;
 
@@ -52,20 +49,19 @@ public class LocaleTest {
 	@Inject
 	public LocaleTest(PluginContainer pluginContainer) {
 		this.pluginContainer = pluginContainer;
-		instance = this;
 		logger = LogManager.getLogger("PluginForTestLocales");
 	}
 
 	@Listener
 	public void onLocaleServisePostEvent(LocaleServiseEvent.Construct event) {
 		api = event.getLocaleService();
-		if(!api.localesExist(instance)) {
-			api.saveAssetLocales(instance);
-			logger.info("Total asset locales created/saved -> " + api.getPluginLocales(instance).size());
+		if(!api.localesExist(pluginContainer)) {
+			api.saveAssetLocales(pluginContainer);
+			logger.info("Total asset locales created/saved -> " + api.getPluginLocales(pluginContainer).size());
 			// When creating localizations, be sure to create a default localization - Locales.DEFAULT.
 			// If the above check is performed, the localization creation will not be performed because it is unnecessary.
-			api.createPluginLocale(instance, ConfigTypes.HOCON, Locales.DEFAULT);
-			api.createPluginLocale(instance, ConfigTypes.YAML, Locales.EN_CA);
+			api.createPluginLocale(pluginContainer, ConfigTypes.HOCON, Locales.DEFAULT);
+			api.createPluginLocale(pluginContainer, ConfigTypes.YAML, Locales.EN_CA);
 			api.createPluginLocale("localetest", ConfigTypes.JSON, Locales.EN_GB);
 			api.createPluginLocale("localetest", ConfigTypes.PROPERTIES, Locales.RU_RU);
 		}
@@ -87,7 +83,7 @@ public class LocaleTest {
 			CompoundTag nbt = new CustomNBT();
 			item.getOrCreateTag().putTag("TestTag", nbt);
 			try {
-				getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").set(TypeTokens.SERIALIZED_STACK_TOKEN, item);
+				getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").set(ItemStack.class, item.getItemStack());
 			} catch (SerializationException e) {
 				logger.error(e.getLocalizedMessage());
 			}
@@ -121,18 +117,18 @@ public class LocaleTest {
 		checkLegacy = updateIsSave(this.saveProperties, getLocaleUtil(Locales.RU_RU).checkListStrings(Arrays.asList("&a&lЛокализация ru-RU. &4&lТест строк конфига PROPERTIES", "Строка 2"), null, "TestListPath"));
 		checkLegacy = updateIsSave(this.saveProperties,  getLocaleUtil(Locales.RU_RU).checkListComponents(true, Arrays.asList(serialize("&a&lЛокализация ru-RU. &4&lТест JSON строк конфига PROPERTIES"), serialize("Строка компонент 2")), null, "TestListComponentsPath"));
 		if(checkLegacy) getLocaleUtil(Locales.RU_RU).saveLocaleNode();
-		
 	}
 
 	private void testRead() {
 		
-		logger.info("Total locales created/saved -> " + api.getPluginLocales(instance).size());
+		logger.info("Total locales created/saved -> " + api.getPluginLocales(pluginContainer).size());
 		
 		try {
 			logger.warn("Start test getting ItemStack from config!");
-			SerializedItemStack stack = getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").get(TypeTokens.SERIALIZED_STACK_TOKEN);
+			SerializedItemStack stack = new SerializedItemStack(getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").get(ItemStack.class));
 			logger.info(stack.getItemStack().type().asComponent());
-			logger.info(((CustomNBT) stack.getOrCreateTag().getTag("TestTag", CompoundTag.getClass(CustomNBT.class)).get()).getString());
+			logger.info(stack.getOrCreateTag().getInteger("TestInt"));
+			logger.info(((CustomNBT) stack.getOrCreateTag().getTag("TestTag", CompoundTag.getClass(CustomNBT.class)).get()).getCustomNBT2().getCustomNBT3().getString());
 		} catch (SerializationException e) {
 			logger.error(e.getLocalizedMessage());
 		}
@@ -147,10 +143,10 @@ public class LocaleTest {
 		
 		//test writed components
 		logger.warn("Start test components! TestComponentPath");
-		logger.info(getComponent(Locales.CA_ES, true, "TestComponentPath"));
-		logger.info(getComponent(Locales.EN_CA, true, "TestComponentPath"));
-		logger.info(getComponent(Locales.EN_GB, true, "TestComponentPath"));
-		logger.info(getComponent(Locales.RU_RU, true, "TestComponentPath"));
+		logger.info(getComponent(Locales.CA_ES, "TestComponentPath"));
+		logger.info(getComponent(Locales.EN_CA, "TestComponentPath"));
+		logger.info(getComponent(Locales.EN_GB, "TestComponentPath"));
+		logger.info(getComponent(Locales.RU_RU, "TestComponentPath"));
 		
 		//Test writed list strings
 		logger.warn("Start test list strings! TestListPath");
@@ -165,22 +161,22 @@ public class LocaleTest {
 		
 		//test writed list components
 		logger.warn("Start test list components! TestListComponentsPath");
-		logger.info(getListComponents(Locales.CA_ES, true, "TestListComponentsPath").get(0));
-		logger.info(getListComponents(Locales.CA_ES, true, "TestListComponentsPath").get(1));
-		logger.info(getListComponents(Locales.EN_CA, true, "TestListComponentsPath").get(0));
-		logger.info(getListComponents(Locales.EN_CA, true, "TestListComponentsPath").get(1));
-		logger.info(getListComponents(Locales.EN_GB, true, "TestListComponentsPath").get(0));
-		logger.info(getListComponents(Locales.EN_GB, true, "TestListComponentsPath").get(1));
-		logger.info(getListComponents(Locales.RU_RU, true, "TestListComponentsPath").get(0));
-		logger.info(getListComponents(Locales.RU_RU, true, "TestListComponentsPath").get(1));
+		logger.info(getListComponents(Locales.CA_ES, "TestListComponentsPath").get(0));
+		logger.info(getListComponents(Locales.CA_ES, "TestListComponentsPath").get(1));
+		logger.info(getListComponents(Locales.EN_CA, "TestListComponentsPath").get(0));
+		logger.info(getListComponents(Locales.EN_CA, "TestListComponentsPath").get(1));
+		logger.info(getListComponents(Locales.EN_GB, "TestListComponentsPath").get(0));
+		logger.info(getListComponents(Locales.EN_GB, "TestListComponentsPath").get(1));
+		logger.info(getListComponents(Locales.RU_RU, "TestListComponentsPath").get(0));
+		logger.info(getListComponents(Locales.RU_RU, "TestListComponentsPath").get(1));
 	}
 
 	private Component serialize(String string) {
 		return LegacyComponentSerializer.legacyAmpersand().deserialize(string);
 	}
 
-	private AbstractLocaleUtil getLocaleUtil(Locale locale) {
-		return api.getOrDefaultLocale(instance, locale);
+	private PluginLocale getLocaleUtil(Locale locale) {
+		return api.getOrDefaultLocale(pluginContainer, locale);
 	}
 
 	private String getString(Locale locale, Object... path) {
@@ -191,12 +187,12 @@ public class LocaleTest {
 		return getLocaleUtil(locale).getListStrings(path);
 	}
 
-	private Component getComponent(Locale locale, boolean json, Object... path) {
-		return getLocaleUtil(locale).getComponent(json, path);
+	private Component getComponent(Locale locale, Object... path) {
+		return getLocaleUtil(locale).getComponent(path);
 	}
 
-	private List<Component> getListComponents(Locale locale, boolean json, Object... path) {
-		return getLocaleUtil(locale).getListComponents(json, path);
+	private List<Component> getListComponents(Locale locale, Object... path) {
+		return getLocaleUtil(locale).getListComponents(path);
 	}
 
 	private boolean updateIsSave(boolean currentResult, boolean check) {

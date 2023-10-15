@@ -6,18 +6,18 @@ import org.spongepowered.configurate.objectmapping.meta.Setting;
 import sawfowl.localeapi.serializetools.CompoundTag;
 
 @ConfigSerializable
-public class CustomNBT extends CompoundTag {
+public class CustomNBT2 extends CompoundTag {
 
 	@Setting("TestKey")
-	private String test = "Test Value 1";
-	@Setting("CustomNBT2")
-	private CustomNBT2 customNBT = new CustomNBT2();
+	private String test = "Test Value 2";
+	@Setting("CustomNBT3")
+	private CustomNBT3 customNBT = new CustomNBT3();
 
 	String getString() {
 		return test;
 	}
 
-	public CustomNBT2 getCustomNBT2() {
+	public CustomNBT3 getCustomNBT3() {
 		return customNBT;
 	}
 	

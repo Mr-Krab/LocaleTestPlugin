@@ -9,16 +9,10 @@ import sawfowl.localeapi.serializetools.CompoundTag;
 public class CustomNBT extends CompoundTag {
 
 	@Setting("TestKey")
-	private String test = "Test Value 1";
-	@Setting("CustomNBT2")
-	private CustomNBT2 customNBT = new CustomNBT2();
+	private String test = "Test Value";
 
 	String getString() {
 		return test;
-	}
-
-	public CustomNBT2 getCustomNBT2() {
-		return customNBT;
 	}
 	
 }

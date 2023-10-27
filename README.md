@@ -1,2 +1,2 @@
 # LocaleTestPlugin
-Test LocaleAPI. Used by SpongeAPI8.
+Test LocaleAPI. Used by SpongeAPI10.

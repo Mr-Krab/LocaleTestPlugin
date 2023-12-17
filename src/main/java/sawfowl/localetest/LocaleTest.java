@@ -100,7 +100,7 @@ public class LocaleTest {
 		checkHocon = updateIsSave(this.saveHocon,  getLocaleUtil(Locales.DEFAULT).checkListComponents(true, Arrays.asList(serialize("&a&lDefault locale. &4&lTest JSON strings HOCON config"), serialize("Component String 2")), "Test comment", "TestListComponentsPath"));
 		if(checkHocon)  getLocaleUtil(Locales.DEFAULT).saveLocaleNode();*/
 
-		if(!getLocaleUtil(Locales.DEFAULT).fileExists()) getLocaleUtil(Locales.DEFAULT).saveLocaleNode();
+		getLocaleUtil(Locales.DEFAULT).saveLocaleNode();
 		// Test write and save locale - en-CA.
 		boolean checkYaml = updateIsSave(saveYaml, getLocaleUtil(Locales.EN_CA).checkString("&a&len-CA locale. &4&lTest String YAML config", "Test comment", "TestPath"));
 		checkYaml = updateIsSave(this.saveYaml, getLocaleUtil(Locales.EN_CA).checkComponent(true, serialize("&a&len-CA locale. &4&lTest JSON string YAML"), "Test comment", "TestComponentPath"));

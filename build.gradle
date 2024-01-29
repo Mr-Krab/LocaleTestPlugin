@@ -1,7 +1,7 @@
 plugins {
 	id("java")
-	id("eclipse")
 	id("org.spongepowered.gradle.plugin") version "2.0.2"
+	id("eclipse")
 	id("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT"
 }
 
@@ -34,7 +34,7 @@ tasks.withType(JavaCompile) {
 
 dependencies {
 	implementation "org.spongepowered:spongeapi:10.0.0"
-	implementation "com.github.SawFowl:LocaleAPI:3.1.0"
+	implementation "com.github.SawFowl:LocaleAPI:3.2.0"
 	//implementation fileTree(dir: 'libs', include: '*.jar')
 }
 
@@ -61,7 +61,7 @@ sponge {
 		dependency("localeapi") {
 			optional(false)
 			loadOrder("after")
-			version("3.0.0")
+			version("3.2.0")
 		}
 	}
 }

@@ -29,8 +29,9 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.PluginLocale;
+import sawfowl.localeapi.api.event.LocaleEvent;
 import sawfowl.localeapi.api.event.LocaleServiseEvent;
-import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStack;
+import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStackPlainNBT;
 
 @Plugin("localetest")
 public class LocaleTest {
@@ -64,6 +65,16 @@ public class LocaleTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		if(!api.localesExist(pluginContainer)) {
+			api.saveAssetLocales(pluginContainer);
+			logger.info("Total asset locales created/saved -> " + api.getPluginLocales(pluginContainer).size());
+			// When creating localizations, be sure to create a default localization - Locales.DEFAULT.
+			// If the above check is performed, the localization creation will not be performed because it is unnecessary.
+			api.createPluginLocale(pluginContainer, ConfigTypes.HOCON, Locales.DEFAULT);
+			api.createPluginLocale(pluginContainer, ConfigTypes.YAML, Locales.EN_CA);
+			api.createPluginLocale("localetest", ConfigTypes.JSON, Locales.EN_GB);
+			//api.createPluginLocale("localetest", ConfigTypes.PROPERTIES, Locales.RU_RU);
+		}
 	}
 
 	@Listener
@@ -75,32 +86,30 @@ public class LocaleTest {
 		}).build());
 	}
 
+	@Listener
+	public void addLocaleConfig(LocaleEvent.Create event) {
+		logger.warn("Checking if an item is loaded from an added config.");
+		ItemStack itemStack = event.getLocaleConfig().asReference(LocaleConfig.class).getItemStack();
+		SerializedItemStackPlainNBT stack = new SerializedItemStackPlainNBT(itemStack);
+		logger.info(itemStack.get(Keys.CUSTOM_NAME));
+		logger.info(itemStack.get(Keys.ITEM_DURABILITY));
+		logger.info(itemStack.get(Keys.LORE));
+		logger.info(itemStack.get(Keys.APPLIED_ENCHANTMENTS));
+		logger.info(stack.getItemStack().type().asComponent());
+		logger.info(stack.getOrCreateTag().getInteger(pluginContainer, "TestInt"));
+		logger.info(stack.getOrCreateTag().getCompoundTag(CustomNBT.class, pluginContainer, "TestTag"));
+	}
+
 	private void testWrite() {
-		api.setDefaultReference(pluginContainer, LocaleConfig.class);
-		if(!api.localesExist(pluginContainer)) {
-			// When creating localizations, be sure to create a default localization - Locales.DEFAULT.
-			// If the above check is performed, the localization creation will not be performed because it is unnecessary.
-			api.createPluginLocale(pluginContainer, ConfigTypes.HOCON, Locales.DEFAULT);
-			api.createPluginLocale(pluginContainer, ConfigTypes.YAML, Locales.EN_CA);
-			api.createPluginLocale("localetest", ConfigTypes.JSON, Locales.EN_GB);
-			api.createPluginLocale("localetest", ConfigTypes.PROPERTIES, Locales.RU_RU);
-			api.saveAssetLocales(pluginContainer);
-		}
 		// Test write and save default locale - en-US.
-		/*try {
+		api.setDefaultReference(pluginContainer, LocaleConfig.class);
+		try {
 			getLocaleUtil(Locales.DEFAULT).setLocaleReference(LocaleConfig.class);
 			getLocaleUtil(Locales.DEFAULT).saveLocaleNode();
 		} catch (ConfigurateException e) {
 			e.printStackTrace();
 		}
-		/*boolean checkHocon = updateIsSave(this.saveHocon, getLocaleUtil(Locales.DEFAULT).checkString("&a&lDefault locale. &4&lTest String HOCON config", "Test comment", "TestPath"));
-		checkHocon = updateIsSave(this.saveHocon, getLocaleUtil(Locales.DEFAULT).checkString("&a&lDefault locale. Checking the string existing only in it.", "Test comment", "TestPath1"));
-		checkHocon = updateIsSave(this.saveHocon,  getLocaleUtil(Locales.DEFAULT).checkComponent(true, serialize("&a&lDefault locale. &4&lTest JSON string HOCON config"), "Test comment", "TestComponentPath"));
-		checkHocon = updateIsSave(this.saveHocon, getLocaleUtil(Locales.DEFAULT).checkListStrings(Arrays.asList("&a&lDefault locale. &4&lTest Strings HOCON config", "String 2"), "Test comment", "TestListPath"));
-		checkHocon = updateIsSave(this.saveHocon,  getLocaleUtil(Locales.DEFAULT).checkListComponents(true, Arrays.asList(serialize("&a&lDefault locale. &4&lTest JSON strings HOCON config"), serialize("Component String 2")), "Test comment", "TestListComponentsPath"));
-		if(checkHocon)  getLocaleUtil(Locales.DEFAULT).saveLocaleNode();*/
 
-		getLocaleUtil(Locales.DEFAULT).saveLocaleNode();
 		// Test write and save locale - en-CA.
 		boolean checkYaml = updateIsSave(saveYaml, getLocaleUtil(Locales.EN_CA).checkString("&a&len-CA locale. &4&lTest String YAML config", "Test comment", "TestPath"));
 		checkYaml = updateIsSave(this.saveYaml, getLocaleUtil(Locales.EN_CA).checkComponent(true, serialize("&a&len-CA locale. &4&lTest JSON string YAML"), "Test comment", "TestComponentPath"));
@@ -130,20 +139,20 @@ public class LocaleTest {
 		try {
 			logger.warn("Start test getting ItemStack from config!");
 			ItemStack itemStack = getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").get(ItemStack.class);
-			SerializedItemStack stack = new SerializedItemStack(itemStack);
+			SerializedItemStackPlainNBT stack = new SerializedItemStackPlainNBT(itemStack);
 			logger.info(itemStack.get(Keys.CUSTOM_NAME));
 			logger.info(itemStack.get(Keys.ITEM_DURABILITY));
 			logger.info(itemStack.get(Keys.LORE));
 			logger.info(itemStack.get(Keys.APPLIED_ENCHANTMENTS));
 			logger.info(stack.getItemStack().type().asComponent());
 			logger.info(stack.getOrCreateTag().getInteger(pluginContainer, "TestInt"));
-			logger.info(stack.getOrCreateTag().getTag(pluginContainer, "TestTag", CustomNBT.class));
+			logger.info(stack.getOrCreateTag().getCompoundTag(CustomNBT.class, pluginContainer, "TestTag"));
 		} catch (SerializationException e) {
 			logger.error(e.getLocalizedMessage());
 		}
 		//Test writed strings
 		logger.warn("Start test strings! TestPath");
-		logger.info(getLocaleUtil(Locales.DEFAULT).asReference(LocaleConfig.class).getTestPath()); // I deliberately indicated the wrong localization in the code.
+		logger.info(getLocaleUtil(Locales.CA_ES).asReference(LocaleConfig.class).getTestPath()); // I deliberately indicated the wrong localization in the code.
 		logger.info(getString(Locales.EN_CA, "TestPath"));
 		logger.info(getString(Locales.EN_GB, "TestPath"));
 		logger.info(getString(Locales.RU_RU, "TestPath", "TestPath2"));
@@ -153,7 +162,7 @@ public class LocaleTest {
 		//test writed components
 		logger.warn("Start test components! TestComponentPath");
 		logger.info(getComponent(Locales.CA_ES, "TestComponentPath"));
-		logger.info(getLocaleUtil(Locales.EN_CA).asReference(LocaleConfig.class).getTestComponentPath());
+		logger.info(getComponent(Locales.EN_CA, "TestComponentPath"));
 		logger.info(getComponent(Locales.EN_GB, "TestComponentPath"));
 		logger.info(getComponent(Locales.RU_RU, "TestComponentPath"));
 		

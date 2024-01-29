@@ -14,10 +14,10 @@ import org.spongepowered.configurate.objectmapping.meta.Setting;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+
 import sawfowl.localeapi.api.LocaleReference;
 import sawfowl.localeapi.api.TextUtils;
-import sawfowl.localeapi.api.serializetools.itemstack.CompoundTag;
-import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStack;
+import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStackPlainNBT;
 
 @ConfigSerializable
 public class LocaleConfig implements LocaleReference {
@@ -63,10 +63,10 @@ public class LocaleConfig implements LocaleReference {
 		itemStack.offer(Keys.ITEM_DURABILITY, 500);
 		itemStack.offer(Keys.LORE, Arrays.asList(serialize("&2Item lore. Line 1."), serialize("&6Item lore. Line 2.")));
 		itemStack.offer(Keys.APPLIED_ENCHANTMENTS, Arrays.asList(Enchantment.of(EnchantmentTypes.LOOTING, 1)));
-		SerializedItemStack item = new SerializedItemStack(itemStack);
-		item.getOrCreateTag().putInteger(LocaleTest.getPluginContainer(), "TestInt", 123213213);
-		CompoundTag nbt = new CustomNBT();
-		item.getOrCreateTag().putTag(LocaleTest.getPluginContainer(), "TestTag", nbt);
+		SerializedItemStackPlainNBT item = new SerializedItemStackPlainNBT(itemStack);
+		item.getOrCreateTag().putObject(LocaleTest.getPluginContainer(), "TestInt", 123213213);
+		CustomNBT nbt = new CustomNBT();
+		item.getOrCreateTag().putCompoundTag(LocaleTest.getPluginContainer(), "TestTag", nbt);
 		return item.getItemStack();
 	}
 

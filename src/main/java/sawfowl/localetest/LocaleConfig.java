@@ -1,7 +1,9 @@
 package sawfowl.localetest;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.item.ItemTypes;
@@ -14,10 +16,10 @@ import org.spongepowered.configurate.objectmapping.meta.Setting;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-
 import sawfowl.localeapi.api.LocaleReference;
 import sawfowl.localeapi.api.TextUtils;
-import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStackPlainNBT;
+import sawfowl.localeapi.api.serializetools.itemstack.PluginComponent;
+import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStackJsonNbt;
 
 @ConfigSerializable
 public class LocaleConfig implements LocaleReference {
@@ -63,10 +65,15 @@ public class LocaleConfig implements LocaleReference {
 		itemStack.offer(Keys.ITEM_DURABILITY, 500);
 		itemStack.offer(Keys.LORE, Arrays.asList(serialize("&2Item lore. Line 1."), serialize("&6Item lore. Line 2.")));
 		itemStack.offer(Keys.APPLIED_ENCHANTMENTS, Arrays.asList(Enchantment.of(EnchantmentTypes.LOOTING, 1)));
-		SerializedItemStackPlainNBT item = new SerializedItemStackPlainNBT(itemStack);
-		item.getOrCreateTag().putObject(LocaleTest.getPluginContainer(), "TestInt", 123213213);
-		CustomNBT nbt = new CustomNBT();
-		item.getOrCreateTag().putCompoundTag(LocaleTest.getPluginContainer(), "TestTag", nbt);
+		SerializedItemStackJsonNbt item = new SerializedItemStackJsonNbt(itemStack);
+		item.getOrCreateComponent().putObject(LocaleTest.getPluginContainer(), "TestInt", 123213213);
+		item.getOrCreateComponent().putObjects(LocaleTest.getPluginContainer(), "TestArray", Arrays.asList("String 1", "String 2"));
+		Map<String, String> testMap = new HashMap<String, String>();
+		testMap.put("TestKey1", "Test Value 1");
+		testMap.put("TestKey2", "Test Value 2");
+		item.getOrCreateComponent().putObjects(String.class, String.class, LocaleTest.getPluginContainer(), "TestMap", testMap);
+		PluginComponent nbt = new CustomNBT();
+		item.getOrCreateComponent().putPluginComponent(LocaleTest.getPluginContainer(), "TestTag", nbt);
 		return item.getItemStack();
 	}
 

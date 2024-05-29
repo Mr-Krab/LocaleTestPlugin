@@ -5,10 +5,10 @@ import org.spongepowered.configurate.objectmapping.meta.Setting;
 
 import com.google.gson.JsonObject;
 
-import sawfowl.localeapi.api.serializetools.itemstack.CompoundTag;
+import sawfowl.localeapi.api.serializetools.itemstack.PluginComponent;
 
 @ConfigSerializable
-public class CustomNBT3 implements CompoundTag {
+public class CustomNBT3 implements PluginComponent {
 
 	@Setting("TestKey")
 	private String test = "Test Value 3";
@@ -22,6 +22,11 @@ public class CustomNBT3 implements CompoundTag {
 		JsonObject object = new JsonObject();
 		object.addProperty("TestKey", test);
 		return object;
+	}
+
+	@Override
+	public String toString() {
+		return "CustomNBT [test=" + test + "]";
 	}
 	
 }

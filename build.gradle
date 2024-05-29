@@ -1,15 +1,15 @@
 plugins {
 	id("java")
-	id("org.spongepowered.gradle.plugin") version "2.0.2"
 	id("eclipse")
+	id("org.spongepowered.gradle.plugin") version "2.0.2"
 	id("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT"
 }
 
 group = "sawfowl.localetest"
-version = "${major}.${minor}.${patch}-${api}-${suffix}"
+version = "${major}.${minor}.${patch}-${suffix}-${api}"
 
 java {
-	sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
@@ -19,13 +19,13 @@ repositories {
 		url = "https://repo.spongepowered.org/repository/maven-public"
 	}
 	maven { 
-		name = "JitPack"
-		url 'https://jitpack.io' 
+		name = "AspectMaven"
+		url 'https://maven.aspect-realms.ru/repository/maven-public/'
 	}
 }
 
 minecraft {
-	version("1.19.4")
+	version("1.20.6")
 }
 
 tasks.withType(JavaCompile) {
@@ -33,13 +33,13 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-	implementation "org.spongepowered:spongeapi:10.0.0"
-	implementation "com.github.SawFowl:LocaleAPI:3.2.0"
-	//implementation fileTree(dir: 'libs', include: '*.jar')
+	implementation "org.spongepowered:spongeapi:${api}"
+	//implementation "com.github.SawFowl:LocaleAPI:4.0"
+	implementation fileTree(dir: 'libs', include: '*.jar')
 }
 
 sponge {
-	apiVersion("10.0.0")
+	apiVersion("${api}")
 	loader {
 		name("java_plain")
 		version("1.0")
@@ -56,12 +56,12 @@ sponge {
 		dependency("spongeapi") {
 			optional(false)
 			loadOrder("after")
-			version("10.0.0")
+			version("${api}")
 		}
 		dependency("localeapi") {
 			optional(false)
 			loadOrder("after")
-			version("3.2.0")
+			version("4.0")
 		}
 	}
 }

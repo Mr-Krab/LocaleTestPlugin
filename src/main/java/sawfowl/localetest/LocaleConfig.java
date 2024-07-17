@@ -19,7 +19,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import sawfowl.localeapi.api.LocaleReference;
 import sawfowl.localeapi.api.TextUtils;
 import sawfowl.localeapi.api.serializetools.itemstack.PluginComponent;
-import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStackJsonNbt;
+import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStack;
 
 @ConfigSerializable
 public class LocaleConfig implements LocaleReference {
@@ -65,7 +65,7 @@ public class LocaleConfig implements LocaleReference {
 		itemStack.offer(Keys.ITEM_DURABILITY, 500);
 		itemStack.offer(Keys.LORE, Arrays.asList(serialize("&2Item lore. Line 1."), serialize("&6Item lore. Line 2.")));
 		itemStack.offer(Keys.APPLIED_ENCHANTMENTS, Arrays.asList(Enchantment.of(EnchantmentTypes.LOOTING, 1)));
-		SerializedItemStackJsonNbt item = new SerializedItemStackJsonNbt(itemStack);
+		SerializedItemStack item = new SerializedItemStack(itemStack);
 		item.getOrCreateComponent().putObject(LocaleTest.getPluginContainer(), "TestInt", 123213213);
 		item.getOrCreateComponent().putObjects(LocaleTest.getPluginContainer(), "TestArray", Arrays.asList("String 1", "String 2"));
 		Map<String, String> testMap = new HashMap<String, String>();

@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.Keys;
@@ -29,9 +26,10 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocaleService;
+import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.PluginLocale;
 import sawfowl.localeapi.api.event.LocaleServiseEvent;
-import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStackPlainNBT;
+import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStack;
 
 @Plugin("localetest")
 public class LocaleTest {
@@ -54,7 +52,7 @@ public class LocaleTest {
 	@Inject
 	public LocaleTest(PluginContainer pluginContainer) {
 		LocaleTest.pluginContainer = pluginContainer;
-		logger = LogManager.getLogger("PluginForTestLocales");
+		logger = Logger.createJavaLogger("PluginForTestLocales");
 	}
 
 	@Listener
@@ -131,7 +129,7 @@ public class LocaleTest {
 		try {
 			logger.warn("Start test getting ItemStack from config!");
 			ItemStack itemStack = getLocaleUtil(Locales.DEFAULT).getLocaleNode("ItemStack").get(ItemStack.class);
-			SerializedItemStackPlainNBT stack = new SerializedItemStackPlainNBT(itemStack);
+			SerializedItemStack stack = new SerializedItemStack(itemStack);
 			logger.info(itemStack.get(Keys.CUSTOM_NAME));
 			logger.info(itemStack.get(Keys.ITEM_DURABILITY));
 			logger.info(itemStack.get(Keys.LORE));
